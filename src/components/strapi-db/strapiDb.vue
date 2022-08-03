@@ -21,11 +21,11 @@ const props = defineProps({
         default: '',
     },
     collection: { // 表名
-        type: [String, Array],
+        type: String,
         default: ''
     },
     field: { // 指定要查询的字段
-        type: String,
+        type: [String,Array],
         default: ''
     },
     fliters: { // 查询条件
@@ -33,11 +33,11 @@ const props = defineProps({
         default: ''
     },
     sort: { // 排序字段
-        type: String,
+        type: [String,Array],
         default: ''
     },
     populate: { // 关联查询
-        type: [String, Array],
+        type: [String, Array,Object],
         default: ''
     },
     pageData: { // 分页策略选择
