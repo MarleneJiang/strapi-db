@@ -5,8 +5,7 @@ import preview from './components/preview.vue'
 </script>
 
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <preview msg="Hello Vue 3 + Vite + Strapi" />
+  <preview msg="Hello StrapiDb" />
 </template>
 
 <style>

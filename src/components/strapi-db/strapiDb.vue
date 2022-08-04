@@ -1,12 +1,13 @@
 <template>
     <view>
-        <slot :data="slotData.dataList" :pagination="slotData.pagination" :loading="slotData.loading" :hasMore="slotData.hasMore" :error="slotData.errorMessage" />
+        <slot :data="slotData.dataList" :pagination="slotData.pagination" :loading="slotData.loading"
+            :hasMore="slotData.hasMore" :error="slotData.errorMessage" />
     </view>
 </template>
 
 <script setup>
 
-import { ref, reactive, onBeforeMount } from 'vue'
+import { ref, reactive, onBeforeMount, watch } from 'vue'
 import axios from 'axios'
 import qs from 'qs'
 
@@ -25,7 +26,7 @@ const props = defineProps({
         default: ''
     },
     field: { // 指定要查询的字段
-        type: [String,Array],
+        type: [String, Array],
         default: ''
     },
     fliters: { // 查询条件
@@ -33,11 +34,11 @@ const props = defineProps({
         default: ''
     },
     sort: { // 排序字段
-        type: [String,Array],
+        type: [String, Array],
         default: ''
     },
     populate: { // 关联查询
-        type: [String, Array,Object],
+        type: [String, Array, Object],
         default: ''
     },
     pageData: { // 分页策略选择
@@ -50,11 +51,11 @@ const props = defineProps({
     },
     pageSize: { // 每页数据数量 pageSize
         type: Number,
-        default: 20
+        default: 10
     },
     getCount: { // 是否查询数据条数 withCount
         type: Boolean,
-        default: false
+        default: true
     },
     getOne: { // 是否只查询一条数据
         type: Number,
@@ -62,7 +63,7 @@ const props = defineProps({
     },
     distinct: { // 是否对数据去重
         type: [Boolean, String],
-        default: false
+        default: true
     },
 })
 
@@ -86,7 +87,7 @@ const loadMode = { // loadtime
 }
 
 /**
- * 相关配置chacao
+ * 相关配置
  */
 
 
@@ -105,13 +106,17 @@ const slotData = reactive({
     hasMore: false,
     errorMessage: {}
 })
+// slotData.pagination = {
+//     page: props.pageCurrent,
+//     pageSize: props.pageSize,
+//     withCount: props.getCount
+// }
 
-
-    // dataList: [],// 数据列表
-    // pagination: {},// 分页信息
-    // loading: false,// 是否加载中
-    // hasMore: false,// 是否有更多数据
-    // errorMessage: {}// 错误信息
+// dataList: [],// 数据列表
+// pagination: {},// 分页信息
+// loading: false,// 是否加载中
+// hasMore: false,// 是否有更多数据
+// errorMessage: {}// 错误信息
 
 /**
  * 当前状态
@@ -149,14 +154,15 @@ const emits = defineEmits(['load', 'error'])
 const getParams = () => {
     const collection = props.collection
     const getOne = props.getOne
+    let json = {
+        pagination: slotData.pagination,
+    }
 
-    const query = qs.stringify({
-        // filters: {
-        //     username: {
-        //         $eq: 'John',
-        //     },
-        // },
-    }, {
+
+
+
+
+    const query = qs.stringify(json, {
         encodeValuesOnly: true, // prettify URL
     });
 
@@ -177,9 +183,9 @@ const getData = () => {
 
     let url = `${collection}`
     if (!!getOne) {
-        url += `/${getOne}/${query}`
+        url += `/${getOne}`
     } else {
-        url += `/${query}`
+        url += `?${query}`
     }
     return ApiGet(url)
 }
@@ -202,20 +208,36 @@ const loadData = (callback) => {
 
 // 获取数据成功后的处理函数
 const loadDataSuccess = (res) => {
+
+
+    if (props.pageData === pageMode.add) {
+        slotData.dataList = slotData.dataList.concat(res.data)
+    } else {
+        slotData.dataList = res.data
+    }
+    if (props.distinct) {
+        // 去重
+        slotData.dataList = uniqueArray(slotData.dataList)
+    }
     if (!!res.data) {
         slotData.pagination = res.meta.pagination
-        slotData.hasMore = slotData.pagination.page < slotData.pagination.pageCount
+        if (props.pageData === pageMode.place) {
+            slotData.hasMore = slotData.pagination.page < slotData.pagination.pageCount
+        } else if (props.pageData === pageMode.add) {
+            slotData.hasMore = slotData.dataList.length < slotData.pagination.total
+        } else {
+            slotData.hasMore = false
+        }
     } else {
         slotData.errorMessage = res.error
     }
-    slotData.dataList = res.data
-    emits(events.load,slotData.dataList,slotData.hasMore,slotData.pagination) // 成功回调，给父组件传递数据
+    emits(events.load, slotData.dataList, slotData.hasMore, slotData.pagination) // 成功回调，给父组件传递数据
 }
 
 // 获取数据失败后的处理函数
 const loadDataFail = (err) => {
-    slotData.errorMessage = err
-    emits(events.error,err) // 失败回调，给父组件传递错误信息
+    slotData.errorMessage = err.response.data.error
+    emits(events.error, err.response.data.error) // 失败回调，给父组件传递错误信息
     if (process.env.NODE_ENV === 'development') {
         console.error(err)
     }
@@ -288,6 +310,35 @@ const ApiDelete = (path, data, timeout = 5000) => {
 
 
 
+
+
+
+
+/**
+ * 
+ * 其他功能
+ */
+
+// 加载更多，但不重复请求
+const loadMore = () => {
+    if (slotData.loading) {
+        return
+    }
+    slotData.pagination.page += 1
+    loadData()
+}
+
+// list去重
+const uniqueArray = (arr) => {
+    const res = new Map();
+    return arr.filter(arr => !res.has(arr.id) && res.set(arr.id, arr.id));
+}
+
+/**
+ * 
+ * 其他功能
+ */
+
 /**
  * 
  * 生命周期
@@ -296,10 +347,39 @@ const ApiDelete = (path, data, timeout = 5000) => {
 onBeforeMount(() => {
     loadData()
 })
-
+watch(props, (val, oldVal) => {
+    //开发环境
+    if (process.env.NODE_ENV === 'development') {
+        console.log('props changed', val, oldVal)
+    }
+    slotData.pagination = {
+        page: props.pageCurrent,
+        pageSize: props.pageSize,
+        withCount: props.getCount
+    }
+    loadData()
+}, {
+    deep: true,
+    immediate: true
+})
 
 /**
  * 
  * 生命周期
+ */
+
+/**
+ * 
+ * 暴露函数
+ */
+
+defineExpose({
+    loadMore,
+})
+
+
+/**
+ * 
+ * 暴露函数
  */
 </script>
