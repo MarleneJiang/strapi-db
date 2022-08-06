@@ -7,7 +7,7 @@
 
 <script setup>
 
-import { ref, reactive, onBeforeMount, watch, computed } from 'vue'
+import { reactive, onBeforeMount, watch, computed } from 'vue'
 import axios from 'axios'
 import qs from 'qs'
 
