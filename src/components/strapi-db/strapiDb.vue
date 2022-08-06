@@ -25,11 +25,11 @@ const props = defineProps({
         type: String,
         default: ''
     },
-    field: { // 指定要查询的字段
+    fields: { // 指定要查询的字段
         type: [String, Array],
         default: ''
     },
-    fliters: { // 查询条件
+    filters: { // 查询条件
         type: Object,
         default: undefined
     },
@@ -65,20 +65,56 @@ const props = defineProps({
         type: Boolean,
         default: true
     },
-    loadtime: {
+    loadtime: { // 数据加载方式
         type: String,
         default: 'auto'
     }
 })
 
-const field_computed = computed(() => {
-    return Array.isArray(props.field) ? props.field : [props.field]
+const fields_computed = computed(() => {  // 格式化fields参数
+    if(Array.isArray(props.fields)){
+        if(!!props.fields[0]){
+            return props.fields
+        }else{
+            return undefined
+        }
+    }else{
+        if(!!props.fields){
+            return [props.fields]
+        }else{
+            return undefined
+        }
+    }
 })
-const sort_computed = computed(() => {
-    return Array.isArray(props.sort) ? props.sort : [props.sort]
+const sort_computed = computed(() => {  // 格式化sort参数
+    if(Array.isArray(props.sort)){
+        if(!!props.sort[0]){
+            return props.sort
+        }else{
+            return undefined
+        }
+    }else{
+        if(!!props.sort){
+            return [props.sort]
+        }else{
+            return undefined
+        }
+    }
 })
-const populate_computed = computed(() => {
-    return Array.isArray(props.populate) ? props.populate : [props.populate]
+const populate_computed = computed(() => {  // 格式化populate参数
+    if(Array.isArray(props.populate)){
+        if(!!props.populate[0]){
+            return props.populate
+        }else{
+            return undefined
+        }
+    }else{
+        if(!!props.populate){
+            return props.populate // 如果不是数组，则直接返回，尤其是populate为*的情况
+        }else{
+            return undefined
+        }
+    }
 })
 
 
@@ -110,7 +146,7 @@ const loadMode = { // loadtime
  * 当前状态
  */
 
-const slotData = reactive({
+const slotData = reactive({  // 全局变量
     dataList: [],
     pagination: {},
     loading: false,
@@ -172,27 +208,29 @@ const getParams = () => {
     }
 
     // 指定字段
-    if (!!props.field) {
-        json.field = field_computed
+    if (!!fields_computed.value) {
+        json.fields = fields_computed.value
     }
 
     // 筛选
-    if (!!props.fliters) {
-        json.filters = props.fliters
+    if (!!props.filters&&props.filters!=={}) {
+        json.filters = props.filters
     }
 
     // 排序
-    if (!!props.sort) {
-        json.sort = sort_computed
+    if (!!sort_computed.value) {
+        json.sort = sort_computed.value
     }
 
     // 关联查询
-    if (!!props.populate) {
-        json.populate = populate_computed
+    if (!!populate_computed.value) {
+        json.populate = populate_computed.value
     }
 
-
-
+    // 开发模式
+    if(process.env.NODE_ENV === 'development') {
+        console.log('query:', json)
+    }
 
     const query = qs.stringify(json, {
         encodeValuesOnly: true, // prettify URL
@@ -448,11 +486,11 @@ watch(props, (val, oldVal) => {
  */
 
 defineExpose({
-    loadMore,
-    login,
-    clear,
-    reset,
-    refresh,
+    loadMore, // 加载更多
+    login,  // 登录
+    clear,  // 清空数据
+    reset,  // 重置页数
+    refresh,  // 刷新数据
 })
 
 
