@@ -7,7 +7,7 @@
 
 <script setup>
 
-import { ref, reactive, onBeforeMount, watch,computed } from 'vue'
+import { ref, reactive, onBeforeMount, watch, computed } from 'vue'
 import axios from 'axios'
 import qs from 'qs'
 
@@ -172,22 +172,22 @@ const getParams = () => {
     }
 
     // 指定字段
-    if(!!props.field){
+    if (!!props.field) {
         json.field = field_computed
     }
 
     // 筛选
-    if(!!props.fliters){
+    if (!!props.fliters) {
         json.filters = props.fliters
     }
 
     // 排序
-    if(!!props.sort){
+    if (!!props.sort) {
         json.sort = sort_computed
     }
 
     // 关联查询
-    if(!!props.populate){
+    if (!!props.populate) {
         json.populate = populate_computed
     }
 
