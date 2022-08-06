@@ -72,46 +72,46 @@ const props = defineProps({
 })
 
 const fields_computed = computed(() => {  // 格式化fields参数
-    if(Array.isArray(props.fields)){
-        if(!!props.fields[0]){
+    if (Array.isArray(props.fields)) {
+        if (!!props.fields[0]) {
             return props.fields
-        }else{
+        } else {
             return undefined
         }
-    }else{
-        if(!!props.fields){
+    } else {
+        if (!!props.fields) {
             return [props.fields]
-        }else{
+        } else {
             return undefined
         }
     }
 })
 const sort_computed = computed(() => {  // 格式化sort参数
-    if(Array.isArray(props.sort)){
-        if(!!props.sort[0]){
+    if (Array.isArray(props.sort)) {
+        if (!!props.sort[0]) {
             return props.sort
-        }else{
+        } else {
             return undefined
         }
-    }else{
-        if(!!props.sort){
+    } else {
+        if (!!props.sort) {
             return [props.sort]
-        }else{
+        } else {
             return undefined
         }
     }
 })
 const populate_computed = computed(() => {  // 格式化populate参数
-    if(Array.isArray(props.populate)){
-        if(!!props.populate[0]){
+    if (Array.isArray(props.populate)) {
+        if (!!props.populate[0]) {
             return props.populate
-        }else{
+        } else {
             return undefined
         }
-    }else{
-        if(!!props.populate){
+    } else {
+        if (!!props.populate) {
             return props.populate // 如果不是数组，则直接返回，尤其是populate为*的情况
-        }else{
+        } else {
             return undefined
         }
     }
@@ -213,7 +213,7 @@ const getParams = () => {
     }
 
     // 筛选
-    if (!!props.filters&&props.filters!=={}) {
+    if (!!props.filters && props.filters !== {}) {
         json.filters = props.filters
     }
 
@@ -228,7 +228,7 @@ const getParams = () => {
     }
 
     // 开发模式
-    if(process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development') {
         console.log('query:', json)
     }
 
@@ -364,9 +364,9 @@ const ApiPut = (path, data, timeout = 5000) => {
     return instance.put(url, data, { timeout })
 }
 
-const ApiDelete = (path, data, timeout = 5000) => {
+const ApiDelete = (path, timeout = 5000) => {
     const url = `${path}`
-    return instance.delete(url, data, { timeout })
+    return instance.delete(url, { timeout })
 }
 
 
@@ -442,6 +442,58 @@ const refresh = () => {
     loadData()
 }
 
+// 增加数据
+const addData = (collection, data) => {
+    const data_ = {
+        "data": data
+    }
+    return new Promise((resolve, reject) => {
+        ApiPost(`${collection}`, data_).then(res => {
+            // 开发环境下打印接口返回的数据
+            if (process.env.NODE_ENV === 'development') {
+                console.log(res)
+            }
+            resolve(res)
+        }).catch(error => {
+            reject(error.response.data.error)
+        })
+    })
+}
+
+// 删除数据
+const removeData = (id, collection) => {
+    return new Promise((resolve, reject) => {
+        ApiDelete(`${collection}/${id}`).then(res => {
+            // 开发环境下打印删除结果
+            if (process.env.NODE_ENV === 'development') {
+                console.log(res)
+            }
+            resolve(res)
+        }).catch(error => {
+            reject(error.response.data.error)
+        })
+    })
+}
+
+// 更新数据
+const updateData = (id, collection, data) => {
+    return new Promise((resolve, reject) => {
+        const data_ = {
+            "data": data
+        }
+        ApiPut(`${collection}/${id}`, data_).then(res => {
+            // 开发环境下打印接口返回的数据
+            if (process.env.NODE_ENV === 'development') {
+                console.log(res)
+            }
+            resolve(res)
+        }).catch(error => {
+            reject(error.response.data.error)
+        })
+    })
+}
+
+
 /**
  * 
  * 其他功能
@@ -491,6 +543,10 @@ defineExpose({
     clear,  // 清空数据
     reset,  // 重置页数
     refresh,  // 刷新数据
+    addData,  // 增加数据
+    removeData,  // 删除数据
+    updateData,  // 更新数据
+
 })
 
 
