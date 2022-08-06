@@ -7,7 +7,7 @@
 
 <script setup>
 
-import { ref, reactive, onBeforeMount, watch } from 'vue'
+import { ref, reactive, onBeforeMount, watch,computed } from 'vue'
 import axios from 'axios'
 import qs from 'qs'
 
@@ -17,10 +17,10 @@ const props = defineProps({
         type: String,
         default: 'https://strapi.marlenej.com/api'
     },
-    jwt: { // JWT token,保障用户权限
-        type: String,
-        default: '',
-    },
+    // jwt: { // JWT token,保障用户权限
+    //     type: String,
+    //     default: '',
+    // },
     collection: { // 表名
         type: String,
         default: ''
@@ -30,15 +30,15 @@ const props = defineProps({
         default: ''
     },
     fliters: { // 查询条件
-        type: [String, Object],
-        default: ''
+        type: Object,
+        default: undefined
     },
     sort: { // 排序字段
         type: [String, Array],
         default: ''
     },
     populate: { // 关联查询
-        type: [String, Array, Object],
+        type: [String, Array],
         default: ''
     },
     pageData: { // 分页策略选择
@@ -62,13 +62,24 @@ const props = defineProps({
         default: undefined
     },
     distinct: { // 是否对数据去重
-        type: [Boolean, String],
+        type: Boolean,
         default: true
     },
+    loadtime: {
+        type: String,
+        default: 'auto'
+    }
 })
 
-
-
+const field_computed = computed(() => {
+    return Array.isArray(props.field) ? props.field : [props.field]
+})
+const sort_computed = computed(() => {
+    return Array.isArray(props.sort) ? props.sort : [props.sort]
+})
+const populate_computed = computed(() => {
+    return Array.isArray(props.populate) ? props.populate : [props.populate]
+})
 
 
 /**
@@ -152,12 +163,33 @@ const emits = defineEmits(['load', 'error'])
 
 // 接受并处理各种api参数的综合函数
 const getParams = () => {
-    const collection = props.collection
-    const getOne = props.getOne
+    const collection = props.collection // 表名
+    const getOne = props.getOne // 是否指定查询
+
+    // 分页
     let json = {
         pagination: slotData.pagination,
     }
 
+    // 指定字段
+    if(!!props.field){
+        json.field = field_computed
+    }
+
+    // 筛选
+    if(!!props.fliters){
+        json.filters = props.fliters
+    }
+
+    // 排序
+    if(!!props.sort){
+        json.sort = sort_computed
+    }
+
+    // 关联查询
+    if(!!props.populate){
+        json.populate = populate_computed
+    }
 
 
 
@@ -324,7 +356,7 @@ const loadMore = () => {
     if (slotData.loading) {
         return
     }
-    slotData.pagination.page += 1
+    slotData.pagination.page += 1 // 如果loadData失败，这里不会-1，之后可能会造成严重错误
     loadData()
 }
 
@@ -332,6 +364,44 @@ const loadMore = () => {
 const uniqueArray = (arr) => {
     const res = new Map();
     return arr.filter(arr => !res.has(arr.id) && res.set(arr.id, arr.id));
+}
+
+// 登录
+const login = (identifier, password) => {
+    const loginData = {
+        "identifier": identifier,
+        "password": password
+    }
+    return new Promise((resolve, reject) => {
+        ApiPost('auth/local', loginData).then(res => {
+            localStorage.setItem('jwt', res.data.jwt)
+            if (process.env.NODE_ENV === 'development') {
+                console.log('JWT:', res.data.jwt)
+            }
+            resolve(res)
+        }).catch(error => {
+            localStorage.removeItem('jwt')
+            reject(error.response.data.error)
+        })
+    })
+
+}
+
+// 清空数据
+const clear = () => {
+    slotData.dataList = []
+}
+
+// 重置页数
+const reset = () => {
+    slotData.pagination.page = 1
+    loadData()
+}
+
+// 刷新数据
+const refresh = () => {
+    clear()
+    loadData()
 }
 
 /**
@@ -345,7 +415,9 @@ const uniqueArray = (arr) => {
  */
 
 onBeforeMount(() => {
-    loadData()
+    if (props.loadtime === loadMode.auto) {
+        loadData()
+    }
 })
 watch(props, (val, oldVal) => {
     //开发环境
@@ -357,7 +429,9 @@ watch(props, (val, oldVal) => {
         pageSize: props.pageSize,
         withCount: props.getCount
     }
-    loadData()
+    if (props.loadtime === loadMode.onready || props.loadtime === loadMode.auto) {
+        loadData()
+    }
 }, {
     deep: true,
     immediate: true
@@ -375,6 +449,10 @@ watch(props, (val, oldVal) => {
 
 defineExpose({
     loadMore,
+    login,
+    clear,
+    reset,
+    refresh,
 })
 
 
