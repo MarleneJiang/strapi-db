@@ -39,6 +39,10 @@ Strapi是一款非常优秀的无头CMS，它基于koa2开发，提供了后端�
 前端通过组件方式直接获取strapi的接口的数据，并绑定在界面上进行渲染。<br/>
 在传统开发中，开发者需要在前端定义data、通过request联网获取接口数据、然后赋值给data。同时后端还需要写接口来查库和反馈数据。<br/>
 但有了strapi和strapi-db，就不再需要编写增删查改的接口和前端请求代码，这些工作，只需要一行代码。写组件，设组件的属性，在属性中指定要查什么表、哪些字段、以及查询条件，就OK了！<br />
+
+![预览](https://p1.meituan.net/dpplatform/4c004b8c4735f5d48393a35fe30bcc31173822.png)
+
+<br />
 IDE敲下`strapi-db`代码块，得到如下代码，然后通过collection属性指定要查询表“table1”，通过field属性指定要查询字段“field1”的数据。查询结果data就可以直接渲染在界面上。
 ```html
 <strapi-db v-slot:default="{data}" collection="table1" fields="field1">
@@ -213,107 +217,9 @@ username: {
       $eq: 'John',
 }
 ```
-更多的操作符请参照下表：
+更多的操作符请参照[表格](https://docs.strapi.io/developer-docs/latest/developer-resources/database-apis-reference/rest/filtering-locale-publication.html#filtering)
 
-| Operator
 
- | Description
-
- |
-| --- | --- |
-| $eq
-
- | 等于
-
- |
-| $ne
-
- | 不等于
-
- |
-| $lt
-
- | 小于
-
- |
-| $lte
-
- | 小于等于
-
- |
-| $gt
-
- | 大于
-
- |
-| $gte
-
- | 大于等于
-
- |
-| $in
-
- | Included in an array
-
- |
-| $notIn
-
- | Not included in an array
-
- |
-| $contains
-
- | Contains (case-sensitive)
-
- |
-| $notContains
-
- | Does not contain (case-sensitive)
-
- |
-| $containsi
-
- | Contains
-
- |
-| $notContainsi
-
- | Does not contain
-
- |
-| $null
-
- | Is null
-
- |
-| $notNull
-
- | Is not null
-
- |
-| $between
-
- | Is between
-
- |
-| $startsWith
-
- | Starts with
-
- |
-| $endsWith
-
- | Ends with
-
- |
-| $or
-
- | Joins the filters in an "or" expression
-
- |
-| $and
-
- | Joins the filters in an "and" expression |
 
 ### sort
 格式为 字段名 空格 asc(升序)/desc(降序)，多个字段用array，优先级为字段顺序
