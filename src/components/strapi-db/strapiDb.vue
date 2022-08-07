@@ -546,6 +546,7 @@ defineExpose({
     addData,  // 增加数据
     removeData,  // 删除数据
     updateData,  // 更新数据
+    loadData,  // 加载数据
 
 })
 

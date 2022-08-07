@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive,computed } from 'vue'
 import strapiDb from './strapi-db/strapiDb.vue'
 
 defineProps({
@@ -52,6 +52,9 @@ const createData = (data) => {
   strapi.value.addData(collection.value,data)
   refresh()
 }
+const getData = computed(() => {
+  return strapi.value.dataList
+})
 </script>
 
 <template>
@@ -103,7 +106,7 @@ const createData = (data) => {
 
       <p v-if="error">错误信息：{{ error }}</p>
     </div>
-
+    {{getData}}
 
 
   </strapi-db>

@@ -12,10 +12,6 @@
     帮助您专注于前端开发的基于Strapi的前端组件。
     
 
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
 
 <br />
     <a href="https://github.com/MarleneJiang/strapi-db"><strong>浏览组件使用文档 »</strong></a>
@@ -28,33 +24,6 @@
   </p>
 </div>
 
-
-
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>文档大纲</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
 
 
 
@@ -94,10 +63,8 @@ IDE敲下`strapi-db`代码块，得到如下代码，然后通过collection属�
 ### Built With
 
 组件主要基于无头的`Strapi`和MVVM前端开发框架`Vue.js`。
-> 请注意，本组件完全基于Vue3.
+请注意，本组件完全基于Vue3.
 
-
-[![Vue][Vue.js]][Vue-url]
 
 
 <p align="right">(<a href="#readme-top">回到顶部</a>)</p>
@@ -146,115 +113,308 @@ IDE敲下`strapi-db`代码块，得到如下代码，然后通过collection属�
 <!-- USAGE EXAMPLES -->
 ## 组件说明文档
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+## 组件属性
+| 属性 | 类型 | 描述 |
+| --- | --- | --- |
+| v-slot:default |  | 查询状态（失败、联网中）及结果（data），详情可见V-slot相关章节 |
+| ref | String | vue组件引用标记，用于调用组件内方法 |
+| baseUrl | String | Strapi管理端的API地址，默认为[https://strapi.marlenej.com/api](https://strapi.marlenej.com/api) |
+| collection | String | 表名。支持输入多个表名，用 , 分割 |
+| fields | String，Array | 指定要查询的字段，多个字段用 array传入。不写本属性，即表示查询所有字段。 |
+| filters | Object | 查询条件，对记录进行过滤。 |
+| sort | String，Array | 排序字段及正序倒序设置 |
+| populate | String，Array | 手动指定使用的关联关系 |
+| pageData | String | 分页策略选择。值为 add 代表下一页的数据追加到之前的数据中，常用于滚动到底加载下一页；值为 replace 时则替换当前data数据，常用于PC式交互，列表底部有页码分页按钮，默认值为add |
+| pageCurrent | Number | 当前页 |
+| pageSize | Number | 每页数据数量 |
+| getCount | Boolean | 是否查询总数据条数，默认 true，需要分页模式时指定为 true |
+| getOne | Number | 指定查询结果的ID为多少 |
+| distinct | Boolean | 是否对数据查询结果中重复的记录（根据id）进行去重，默认值true |
+| loadtime | String | 数据加载方式，详情见下 |
+| @load | EventHandle | 成功回调。联网返回结果后，若希望先修改下数据再渲染界面，则在本方法里对data进行修改 |
+| @error | EventHandle | 失败回调 |
+
+### 示例
+比如strapi有个user的表，里面有字段id、name，查询id=1的数据，那么写法如下：
+**注意下面示例使用了getOne会返回一条对象形式的data，如不使用getOne，data将会是数组形式，即多一层。**
+```vue
+<template>
+  <view>
+    <strapi-db v-slot:default="{data}" collection="user" getOne=1>
+      <view>
+          {{ data.name}}
+      </view>
+    </strapi-db>
+  </view>
+</template>
+
+```
+### V-slot
+```vue
+<strapi-db v-slot:default="{data,pagination,loading,hasMore,error}"></strapi-db>
+
+```
+| 属性 | 类型 | 描述 |
+| --- | --- | --- |
+| data | Array | 查询结果 |
+| pagination | Object | 分页属性 |
+| loading | Boolean | 查询中的状态。可根据此状态，在template中通过v-if显示等待内容，如<view v-if="loading">加载中...</view> |
+| hasMore | Boolean | 是否有更多数据。可根据此状态，在template中通过v-if显示没有更多数据了。部分特殊情况下存在BUG。 |
+| error | Object | 查询错误。可根据此状态，在template中通过v-if显示等待内容，如<view v-if="error">加载错误</view> |
+
+#### 状态示例
+```vue
+<strapi-db v-slot:default="{data, loading, error}" collection="user">
+	<view v-if="error">{{error.message}}</view>
+	<view v-else-if="loading">正在加载...</view>
+	<view v-else>
+		<ul>
+        <li v-for="item in data">
+          {{ item }}
+        </li>
+     </ul>
+	</view>
+</strapi-db>
+
+
+```
+### collection
+collection即strapi中的表名。
+```vue
+<strapi-db v-slot:default="{data, loading, error}" collection="user">
+	<view v-if="error">{{error.message}}</view>
+	<view v-else-if="loading">正在加载...</view>
+	<view v-else>
+		{{data}}
+	</view>
+</strapi-db>
+
+```
+### populate
+populate填写某个关联字段或者`%2A`(表示将关联的字段一并显示，它是`*`的转义字符)。
+> 如果仅需要关联一个字段，请不要使用array格式，尤其是*
+
+如果我们需要该表显示关联的categories字段，可以传入如下内容到populate参数。
+```javascript
+['categories']
+```
+### fields
+fields指定collection中要查询的字段，不填该参数则默认查询所有字段
+例如，只查询title和body字段，则传入如下内容到fields参数。
+```javascript
+['title', 'body']
+```
+### filters
+filters中指定要查询的条件。比如只查询某个字段的值符合一定条件的记录。
+例如，如果想要查询username = John 的 记录，可以将下面的Object传入filters参数。等于的操作符即$eq
+```vue
+username: {
+      $eq: 'John',
+}
+```
+更多的操作符请参照下表：
+
+| Operator
+
+ | Description
+
+ |
+| --- | --- |
+| $eq
+
+ | 等于
+
+ |
+| $ne
+
+ | 不等于
+
+ |
+| $lt
+
+ | 小于
+
+ |
+| $lte
+
+ | 小于等于
+
+ |
+| $gt
+
+ | 大于
+
+ |
+| $gte
+
+ | 大于等于
+
+ |
+| $in
+
+ | Included in an array
+
+ |
+| $notIn
+
+ | Not included in an array
+
+ |
+| $contains
+
+ | Contains (case-sensitive)
+
+ |
+| $notContains
+
+ | Does not contain (case-sensitive)
+
+ |
+| $containsi
+
+ | Contains
+
+ |
+| $notContainsi
+
+ | Does not contain
+
+ |
+| $null
+
+ | Is null
+
+ |
+| $notNull
+
+ | Is not null
+
+ |
+| $between
+
+ | Is between
+
+ |
+| $startsWith
+
+ | Starts with
+
+ |
+| $endsWith
+
+ | Ends with
+
+ |
+| $or
+
+ | Joins the filters in an "or" expression
+
+ |
+| $and
+
+ | Joins the filters in an "and" expression |
+
+### sort
+格式为 字段名 空格 asc(升序)/desc(降序)，多个字段用array，优先级为字段顺序
+示例代码：
+```vue
+<strapi-db sort="['title:asc', 'slug:desc']"></strapi-db>
+```
+### loadtime
+| 值 | 类型 | 描述 |
+| --- | --- | --- |
+| auto | String | 页面就绪后或属性变化后加载数据，默认为auto |
+| onready | String | 页面就绪后不自动加载数据，属性变化后加载。适合在onready中接收上个页面的参数作为filters条件时。 |
+| manual | String | 手动模式，不自动加载数据。如果涉及到分页，需要先手动修改当前页，在调用加载数据 |
+
+### @事件
+
+- load事件
+
+load事件在查询执行后、渲染前触发，一般用于查询数据的二次加工。比如查库结果不能直接渲染时，可以在load事件里先对data进行预处理。
+```vue
+...
+<strapi-db @load="handleLoad" />
+...
+
+handleLoad(data, pagination) {
+  // `data` 当前查询结果
+  // `pagination` 分页信息
+}
+
+```
+
+- error事件
+
+error事件在查询报错时触发，比如联网失败。
+```vue
+...
+<strapi-db @error="handleError" />
+...
+
+handleError(e) {
+  // {message}
+}
+
+```
+## 组件方法
+### loadData
+当 <strapi-db> 组件的 manual 属性设为 true 时，不会在页面初始化时联网查询数据，此时需要通过本方法在需要的时候手动加载数据。
+```vue
+strapi.value.loadData() //strapi为strapi-db组件的ref属性值
+
+```
+### loadMore
+在列表的加载下一页场景下，使用ref方式访问组件方法，加载更多数据，每加载成功一次，当前页 +1
+```vue
+strapi.value.loadMore() //strapi为strapi-db组件的ref属性值
+
+```
+### clear
+清空已加载的数据，但不会重置当前分页信息
+```vue
+strapi.value.clear() //strapi为strapi-db组件的ref属性值
+
+```
+### reset
+重置当前分页信息，并重新加载数据
+```vue
+strapi.value.reset() //strapi为strapi-db组件的ref属性值
+
+```
+### refresh
+清空并重新加载当前页面数据
+```vue
+strapi.value.refresh() 
+
+```
+### login
+本组件提供登录的方法。strapi自带登录系统，用户权限管理。部分api存在权限限制，需要用户鉴权。通过登录方法可以自动取得JWT并存放于localStorage中。之后使用strapiDb组件时会自动附带JWT。所以本方法应在strapi-db组件创建之前调用。
+identifier：账号/邮箱
+password：密码
+```javascript
+strapi.value.login(identifier, password)
+```
+### addData
+顾名思义，添加一条数据。
+```javascript
+strapi.value.addData(collection,data)
+```
+### removeData
+顾名思义，删除一条数据。
+```javascript
+strapi.value.removeData(id,collection)
+```
+### updateData
+顾名思义，更改一条数据的内容。
+```javascript
+strapi.value.updateData(id,collection,data)
+```
 
 <p align="right">(<a href="#readme-top">回到顶部</a>)</p>
 
 
 
-<!-- ROADMAP -->
-## Roadmap
-
-- [x] Add Changelog
-- [x] Add 回到顶部 links
-- [ ] Add Additional Templates w/ Examples
-- [ ] Add "components" document to easily copy & paste sections of the readme
-- [ ] Multi-language Support
-    - [ ] Chinese
-    - [ ] Spanish
-
-See the [open issues](https://github.com/MarleneJiang/strapi-db/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#readme-top">回到顶部</a>)</p>
 
 
-
-<!-- CONTRIBUTING -->
-## Contributing
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-<p align="right">(<a href="#readme-top">回到顶部</a>)</p>
-
-
-
-<!-- LICENSE -->
-## License
-
-Distributed under the MIT License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">回到顶部</a>)</p>
-
-
-
-<!-- CONTACT -->
-## Contact
-
-Your Name - [@your_twitter](https://twitter.com/your_username) - email@example.com
-
-Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
-
-<p align="right">(<a href="#readme-top">回到顶部</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
-
-* [Choose an Open Source License](https://choosealicense.com)
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-* [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
-* [Malven's Grid Cheatsheet](https://grid.malven.co/)
-* [Img Shields](https://shields.io)
-* [GitHub Pages](https://pages.github.com)
-* [Font Awesome](https://fontawesome.com)
-* [React Icons](https://react-icons.github.io/react-icons/search)
-
-<p align="right">(<a href="#readme-top">回到顶部</a>)</p>
-
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/MarleneJiang/strapi-db.svg?style=for-the-badge
-[contributors-url]: https://github.com/MarleneJiang/strapi-db/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/MarleneJiang/strapi-db.svg?style=for-the-badge
-[forks-url]: https://github.com/MarleneJiang/strapi-db/network/members
-[stars-shield]: https://img.shields.io/github/stars/MarleneJiang/strapi-db.svg?style=for-the-badge
-[stars-url]: https://github.com/MarleneJiang/strapi-db/stargazers
-[issues-shield]: https://img.shields.io/github/issues/MarleneJiang/strapi-db.svg?style=for-the-badge
-[issues-url]: https://github.com/MarleneJiang/strapi-db/issues
-[license-shield]: https://img.shields.io/github/license/MarleneJiang/strapi-db.svg?style=for-the-badge
-[license-url]: https://github.com/MarleneJiang/strapi-db/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/othneildrew
-[product-screenshot]: images/screenshot.png
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/
-[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
-[React-url]: https://reactjs.org/
-[Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
-[Vue-url]: https://vuejs.org/
-[Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
-[Angular-url]: https://angular.io/
-[Svelte.dev]: https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00
-[Svelte-url]: https://svelte.dev/
-[Laravel.com]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
-[Laravel-url]: https://laravel.com
-[Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
-[Bootstrap-url]: https://getbootstrap.com
-[JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com 
