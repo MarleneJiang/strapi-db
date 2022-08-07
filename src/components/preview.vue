@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive,computed } from 'vue'
+import { ref, reactive } from 'vue'
 import strapiDb from './strapi-db/strapiDb.vue'
 
 defineProps({
@@ -40,21 +40,23 @@ const reset = () => {
   strapi.value.reset()
 }
 const deleteData = (id) => {
-  strapi.value.removeData(id,collection.value)
-  refresh()
+  strapi.value.removeData(id, collection.value)
+  clear()
+  setTimeout(() => {
+
+    refresh()
+  }, 1000)
+
 }
 
-const updateData = (id,data) => {
-  strapi.value.updateData(id,collection.value,data)
+const updateData = (id, data) => {
+  strapi.value.updateData(id, collection.value, data)
   refresh()
 }
 const createData = (data) => {
-  strapi.value.addData(collection.value,data)
+  strapi.value.addData(collection.value, data)
   refresh()
 }
-const getData = computed(() => {
-  return strapi.value.dataList
-})
 </script>
 
 <template>
@@ -92,12 +94,12 @@ const getData = computed(() => {
         <li v-for="item in data">
           {{ item }}
           <button @click="deleteData(item.id)">删除</button>
-          <button @click="updateData(item.id,{num:999})">修改</button>
+          <button @click="updateData(item.id, { num: 999 })">修改</button>
         </li>
-        
+
       </ul>
       <button v-if="hasMore" @click="load">加载更多</button>
-      <button @click="createData({num:999})">增加数据</button>
+      <button @click="createData({ num: 999 })">增加数据</button>
     </div>
     <div class="info">
       <h2> 其他信息 </h2>
@@ -106,7 +108,6 @@ const getData = computed(() => {
 
       <p v-if="error">错误信息：{{ error }}</p>
     </div>
-    {{getData}}
 
 
   </strapi-db>
