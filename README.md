@@ -44,7 +44,8 @@ Strapi是一款非常优秀的无头CMS，它基于koa2开发，提供了后端�
 
 <br />
 IDE敲下`strapi-db`代码块，得到如下代码，然后通过collection属性指定要查询表“table1”，通过field属性指定要查询字段“field1”的数据。查询结果data就可以直接渲染在界面上。
-```html
+
+```
 <strapi-db v-slot:default="{data}" collection="table1" fields="field1">
 	<view>
 	    <ul>
@@ -54,7 +55,6 @@ IDE敲下`strapi-db`代码块，得到如下代码，然后通过collection属�
         </ul>
 	</view>
 </strapi-db>
-
 ```
 
 `<strapi-db> `组件尤其适用于列表、详情等展示类页面。开发效率可以大幅度的提升。
