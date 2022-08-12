@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive } from 'vue'
-import strapiDb from './strapi-db/strapiDb.vue'
+// import strapiDb from './strapi-db/strapiDb.vue'
 
 defineProps({
   msg: String

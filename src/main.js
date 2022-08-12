@@ -1,4 +1,4 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-
-createApp(App).mount('#app')
+import strapiDb from 'strapi-db'
+createApp(App).use(strapiDb).mount('#app')

@@ -4,7 +4,11 @@
             :hasMore="slotData.hasMore" :error="slotData.errorMessage" />
     </view>
 </template>
-
+<script>
+export default {
+    name:'strapiDb'
+}
+</script>
 <script setup>
 
 import { reactive, onBeforeMount, watch, computed } from 'vue'
