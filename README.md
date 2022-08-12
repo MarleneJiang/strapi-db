@@ -76,22 +76,12 @@ IDE敲下`strapi-db`代码块，得到如下代码，然后通过collection属�
 
 这是一个简单示例来帮助你更快的掌握组件的使用方法。
 
-### 准备使用
-
-组件的所有功能皆已经存放于`strapiDb.vue`文件中，请将该文件拖拽到您开发的vue3项目的根目录中。
-
 ### 安装依赖
 
-组件不可避免地需要提前在项目中安装依赖，我们推荐使用`yarn`来安装依赖
+```bash
+  npm i strapi-db
+```
 
-1. axios
-   ```sh
-    yarn add axios
-   ```
-2. qs
-   ```sh
-    yarn add qs
-   ```
 ### 开始使用
 在文件中引入该组件，并在template内编写如下代码即可。更详细的例子请参考[preview.vue](https://github.com/MarleneJiang/strapi-db/blob/main/src/components/preview.vue)
 ``` html
